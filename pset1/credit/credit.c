@@ -34,7 +34,7 @@ int main(void)
         if (!(isAmEx || isVisa || isMasterCard))
         {
             printf("INVALID\n");
-            break;
+            continue;
         }
 
         // Checksum instructions (verbatim from the assignment):
@@ -44,8 +44,8 @@ int main(void)
 
         // consume the number, two digits at a time, starting at the least significant end (the right side)
         long int remainingNumber = creditCardNumber;
-        int evens = 0;
-        int odds = 0;
+        int evenx2DigitSum = 0;
+        int oddSum = 0;
         while (remainingNumber > 0)
         {
             // get the last two digits
@@ -59,22 +59,25 @@ int main(void)
             int tens = thisChunk / 10;
             int ones = thisChunk % 10;
 
-            // multiply the tens by two and add them to the sum of evens
-            evens += tens * 2;
+            // multiply the tens by two
+            tensx2 = tens * 2;
+            // add the digits of tens*2
+            evenx2DigitSum += tensx2 / 10;
+            evenx2DigitSum += tensx2 % 10;
+            if (debug) { printf("evenx2DigitSum + %i + %i = %i", tensx2 / 10, tensx2 % 10, evenx2DigitSum); }
             // add the ones to the odds
-            odds += ones;
+            oddSum += ones;
         }
-
-        if (debug) { printf("even sum: %i, odd sum: %i\n", evens, odds); }
         // add the sums together
         int checksum = evens + odds;
+        if (debug) { printf("evenx2DigitSum + oddSum = %i + %i = %i\n", evenx2DigitSum, oddSum, checksum); }
 
         // check if it's 0 mod 10
         validNumber = checksum % 10 == 0;
         if (!validNumber)
         {
             printf("INVALID\n");
-            break;
+            continue;
         }
 
         // if we made it this far, the number is VALID!
@@ -96,6 +99,7 @@ int main(void)
             // execution should never reach this branch!!!
             printf("This should never happen!!!!!!!!!\n");
         }
+        continue;
     }
     while (!validNumber);
 }
