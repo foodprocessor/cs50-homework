@@ -34,7 +34,7 @@ int main(void)
         if (!(isAmEx || isVisa || isMasterCard))
         {
             printf("INVALID\n");
-            continue;
+            break;
         }
 
         // Checksum instructions (verbatim from the assignment):
@@ -60,7 +60,7 @@ int main(void)
             int ones = thisChunk % 10;
 
             // multiply the tens by two
-            tensx2 = tens * 2;
+            int tensx2 = tens * 2;
             // add the digits of tens*2
             evenx2DigitSum += tensx2 / 10;
             evenx2DigitSum += tensx2 % 10;
@@ -69,7 +69,7 @@ int main(void)
             oddSum += ones;
         }
         // add the sums together
-        int checksum = evens + odds;
+        int checksum = evenx2DigitSum + oddSum;
         if (debug) { printf("evenx2DigitSum + oddSum = %i + %i = %i\n", evenx2DigitSum, oddSum, checksum); }
 
         // check if it's 0 mod 10
@@ -77,7 +77,7 @@ int main(void)
         if (!validNumber)
         {
             printf("INVALID\n");
-            continue;
+            break;
         }
 
         // if we made it this far, the number is VALID!
@@ -99,7 +99,6 @@ int main(void)
             // execution should never reach this branch!!!
             printf("This should never happen!!!!!!!!!\n");
         }
-        continue;
     }
     while (!validNumber);
 }
