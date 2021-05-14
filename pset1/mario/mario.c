@@ -5,7 +5,7 @@ void printChars(char character, int times);
 
 int main(void)
 {
-    // Prompt for size
+    // Prompt for a size between 1 and 8
     int size;
     do
     {
@@ -14,20 +14,20 @@ int main(void)
     while (size < 1 || size > 8);
 
     // Make towers
-    for (int i=1; i<size; i++)
+    for (int i = 1; i <= size; i++)
     {
-        printChars(' ',size-i);
-        printChars('#',i);
+        printChars(' ', size - i);
+        printChars('#', i);
         printf("  ");
-        printChars('#',i);
-        printChars(' ',size-i);
+        printChars('#', i);
         printf("\n");
     }
 }
 
+// Print a character many times
 void printChars(char character, int times)
 {
-    for (int i=0; i<times; i++)
+    for (int i = 0; i < times; i++)
     {
         printf("%c", character);
     }
