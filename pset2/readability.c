@@ -6,6 +6,8 @@
 #include <stdio.h>
 // for strlen
 #include <string.h>
+// for round
+#include <math.h>
 
 // gradeFloat = 0.0588 * L - 0.296 * S - 15.8
 // L := the average number of letters per 100 words in the text
@@ -59,6 +61,7 @@ int lettersInWord(string word)
     {
         numLetters += isalpha(word[i]) ? 1 : 0;
     }
+    return numLetters;
 }
 
 bool endOfSentence(string word)
