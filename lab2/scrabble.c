@@ -19,9 +19,26 @@ int main(void)
     int score2 = compute_score(word2);
 
     // TODO: Print the winner
+    printf("Player %i wins!\n", score1 > score2 ? 1 : 2);
 }
 
 int compute_score(string word)
 {
-    // TODO: Compute and return score for string
+    // iterate over the letters
+    int score = 0;
+    int wordLength = strlen(word);
+    for (int i=0; i<wordLength; i++)
+    {
+        // just work with lower case
+        char letter = tolower(word[i]);
+        // skip non-letters
+        if (!isalpha(letter))
+        {
+            continue;
+        }
+        // if we subtract 'a', we get which letter of the alphabet we have, starting with 'a' at 0
+        unsigned int letterIndex = letter - 'a';
+        score += POINTS[letterIndex];
+    }
+    return score;
 }
