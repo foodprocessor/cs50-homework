@@ -50,7 +50,7 @@ int main(void)
     int grade = round(0.0588 * lettersPer100Words - 0.296 * sentencesPer100Words - 15.8);
 
     // Print the grade
-    printf("Grade %i", grade);
+    printf("Grade %i\n", grade);
 }
 
 int lettersInWord(string word)
