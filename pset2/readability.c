@@ -13,6 +13,7 @@
 // grade should be "rounded to the nearest whole number"
 
 int lettersInWord(string word);
+bool endOfSentence(string word);
 
 int main(void)
 {
@@ -31,36 +32,52 @@ int main(void)
     while (word != NULL)
     {
         // Get some numbers
-
+        numWords++;
+        numLetters += lettersInWord(word);
+        numSentences += endOfSentence(word) ? 1 : 0;
         // From the strtok man page:
         // "In each subsequent call that should parse the same string, str must be NULL."
         word = strtok(NULL, delimeters);
     }
+
     // do some division
-    float lettersPer100Words;
-    float sentencesPer100Words;
+    float numHundredsOfWords = numWords / 100.0;
+    float lettersPer100Words = numLetters / numHundredsOfWords;
+    float sentencesPer100Words = numSentences / numHundredsOfWords;
     // calculate the grade
     int grade = round(0.0588 * lettersPer100Words - 0.296 * sentencesPer100Words - 15.8);
+
+    // Print the grade
     printf("Grade %i", grade);
 }
 
-int compute_score(string word)
+int lettersInWord(string word)
 {
-    // iterate over the letters
-    int score = 0;
-    int wordLength = strlen(word);
-    for (int i = 0; i < wordLength; i++)
+    int numLetters = 0;
+    int numCharacters = strlen(word);
+    for (int i=0; i<numCharacters; i++)
     {
-        // just work with lower case
-        char letter = tolower(word[i]);
-        // skip non-letters
-        if (!isalpha(letter))
-        {
-            continue;
-        }
-        // if we subtract 'a', we get which letter of the alphabet we have, starting with 'a' at 0
-        unsigned int letterIndex = letter - 'a';
-        score += POINTS[letterIndex];
+        numLetters += isalpha(word[i]) ? 1 : 0;
     }
-    return score;
+}
+
+bool endOfSentence(string word)
+{
+    // only check the last character
+    int lastIndex = strlen(word) - 1;
+    // how do sentences end?
+    const string sentenceTerminators = "!?.";
+
+    // iterate over possible sentence-ending characters
+    int numTerminators = strlen(sentenceTerminators);
+    for (int i=0; i < numTerminators; i++)
+    {
+        if (word[lastIndex] == sentenceTerminators[i])
+        {
+            return true;
+        }
+    }
+
+    // there was no match
+    return false;
 }
