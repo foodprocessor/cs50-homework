@@ -34,7 +34,7 @@ int compute_score(string word)
     // iterate over the letters
     int score = 0;
     int wordLength = strlen(word);
-    for (int i=0; i<wordLength; i++)
+    for (int i = 0; i < wordLength; i++)
     {
         // just work with lower case
         char letter = tolower(word[i]);
