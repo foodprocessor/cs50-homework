@@ -68,7 +68,7 @@ int lettersInWord(string word)
 {
     int numLetters = 0;
     int numCharacters = strlen(word);
-    for (int i=0; i<numCharacters; i++)
+    for (int i = 0; i < numCharacters; i++)
     {
         numLetters += isalpha(word[i]) ? 1 : 0;
     }
@@ -84,7 +84,7 @@ bool endOfSentence(string word)
 
     // iterate over possible sentence-ending characters
     int numTerminators = strlen(sentenceTerminators);
-    for (int i=0; i < numTerminators; i++)
+    for (int i = 0; i < numTerminators; i++)
     {
         if (word[lastIndex] == sentenceTerminators[i])
         {
