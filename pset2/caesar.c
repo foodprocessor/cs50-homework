@@ -51,6 +51,9 @@ int main(int argc, string argv[])
 
     // print the result
     printf("ciphertext: %s\n", text);
+
+    // exit
+    return 0;
 }
 
 int parseKey(string keyString)
