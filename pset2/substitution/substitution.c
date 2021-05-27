@@ -74,7 +74,7 @@
 //     After outputting ciphertext, you should print a newline. Your program should then exit by returning 0 from main.
 
 string parseKey(string keyString);
-char ecryptLetter(char plainChar, int key);
+char ecryptLetter(char plainChar, string key);
 
 int main(int argc, string argv[])
 {
@@ -120,7 +120,7 @@ int main(int argc, string argv[])
     return 0;
 }
 
-int parseKey(string keyString)
+string parseKey(string keyString)
 {
     // start at the beginning, eating one character at a time
     int keyLength = strlen(keyString);
