@@ -17,21 +17,22 @@ char ecryptLetter(char plainChar, int key);
 int main(int argc, string argv[])
 {
     bool validInput = true;
+    int key;
     // take in command line argument (cipher / offset)
     if (argc != 2)
     {
         validInput = false;
     }
-
-    //get key
-    int key = parseKey(argv[1]);
-
-    // reject negative integers
-    if (key < 0)
+    else
     {
-        validInput = false;
+        //get key
+        key = parseKey(argv[1]);
+        // reject negative integers
+        if (key < 0)
+        {
+            validInput = false;
+        }
     }
-
     // print usage
     if (!validInput)
     {
@@ -64,12 +65,14 @@ int parseKey(string keyString)
     for (int i = 0; i < keyLength; i++)
     {
         // get the character
-        char digit = keyString[i];
+        char digitChar = keyString[i];
         // check that it's numeric
-        if (!isdigit(digit))
+        if (!isdigit(digitChar))
         {
             return -1;
         }
+        // get the actual number
+        int digit = digitChar - '0';
         // add to key
         key = (key * 10) + digit;
     }
