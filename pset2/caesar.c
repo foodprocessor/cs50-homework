@@ -1,4 +1,4 @@
-// classifying characters (isalpha, tolower, etc.)
+// classifying characters (for isdigit)
 #include <ctype.h>
 // for the "string" type
 #include <cs50.h>
@@ -6,26 +6,38 @@
 #include <stdio.h>
 // for strlen
 #include <string.h>
-// for round
-#include <math.h>
-// for atoi
-#include <stdlib.h>
 
 // $ ./caesar 13
 // plaintext:  HELLO
 // ciphertext: URYYB
 
+int parseKey(string keyString);
 char ecryptLetter(char plainChar, int key);
 
 int main(int argc, string argv[])
 {
+    bool validInput = true;
     // take in command line argument (cipher / offset)
     if (argc != 2)
+    {
+        validInput = false;
+    }
+
+    //get key
+    int key = parseKey(argv[1]);
+
+    // reject negative integers
+    if (key < 0)
+    {
+        validInput = false;
+    }
+
+    // print usage
+    if (!validInput)
     {
         printf("Usage: ./caesar key\n");
         return 1;
     }
-    int key = atoi(argv[1]);
 
     // Get text
     string text = get_string("plaintext:  ");
@@ -39,6 +51,27 @@ int main(int argc, string argv[])
 
     // print the result
     printf("ciphertext: %s\n", text);
+}
+
+int parseKey(string keyString)
+{
+    int key = 0;
+    // start at the beginning, eating one character at a time
+    int keyLength = strlen(keyString);
+    for (int i = 0; i < keyLength; i++)
+    {
+        // get the character
+        char digit = keyString[i];
+        // check that it's numeric
+        if (!isdigit(digit))
+        {
+            return -1;
+        }
+        // add to key
+        key = (key * 10) + digit;
+    }
+
+    return key;
 }
 
 char ecryptLetter(char plainChar, int key)
