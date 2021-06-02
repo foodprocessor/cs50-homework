@@ -16,7 +16,7 @@
 
 int lettersInWord(string word);
 bool endOfSentence(string word);
-int numNonSpaces(string text, int position);
+int nullNextSpace(string text, int position);
 
 int main(void)
 {
@@ -29,17 +29,16 @@ int main(void)
     int numSentences = 0;
     // Variables for word parsing
     int textLength = strlen(text);
-    int textPosition = 0;
+    int thisWordPosition = 0;
+    int nextWordPosition;
 
-    while (textPosition < textLength)
+    while (thisWordPosition < textLength)
     {
         // Get the next word
-        int wordLength = numNonSpaces(text, textPosition);
-        char word[wordLength + 1];
-        // this is a trick: if you add an integer to an array, it moves the start forward
-        strncpy(word, text + textPosition, wordLength);
-        word[wordLength] = '\0';
-        textPosition += wordLength + 1; // skip the space
+        // Tricky code here: adding an int to a string moves the start of the string forward
+        string word = text + thisWordPosition;
+        // Tricky code here: nulling the space in the original text also affects the "word" variable
+        thisWordPosition = nullNextSpace(text, thisWordPosition);
         // Get some numbers
         numWords++;
         numLetters += lettersInWord(word);
@@ -100,14 +99,13 @@ bool endOfSentence(string word)
     return false;
 }
 
-int numNonSpaces(string text, int textPosition)
+int nullNextSpace(string text, int textPosition)
 {
-    int wordLength = 0;
     int i = textPosition;
     while(text[i] != ' ' && text[i] != '\0')
     {
-        wordLength++;
         i++;
     }
-    return wordLength;
+    text[i] = '\0';
+    return i + 1;
 }
