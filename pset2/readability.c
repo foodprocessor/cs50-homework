@@ -16,6 +16,7 @@
 
 int lettersInWord(string word);
 bool endOfSentence(string word);
+int numNonSpaces(string text, int position);
 
 int main(void)
 {
@@ -26,20 +27,23 @@ int main(void)
     int numLetters = 0;
     int numWords = 0;
     int numSentences = 0;
-    // strtok(string, delimeters) modifies the given string by breaking it into a series of strings along the given list of delimiter characters
-    // strtok returns these substrings, one at a time (each call to strtok returns one substring), until there are no more, and it returns NULL.
-    // strtok requires an initial call which differes from the repeated calls in the loop
-    string delimeters = " ";
-    string word = strtok(text, delimeters);
-    while (word != NULL)
+    // Variables for word parsing
+    int textLength = strlen(text);
+    int textPosition = 0;
+
+    while (textPosition < textLength)
     {
+        // Get the next word
+        int wordLength = numNonSpaces(text, textPosition);
+        char word[wordLength + 1];
+        // this is a trick: if you add an integer to an array, it moves the start forward
+        strncpy(word, text + textPosition, wordLength);
+        word[wordLength] = '\0';
+        textPosition += wordLength + 1; // skip the space
         // Get some numbers
         numWords++;
         numLetters += lettersInWord(word);
         numSentences += endOfSentence(word) ? 1 : 0;
-        // From the strtok man page:
-        // "In each subsequent call that should parse the same string, str must be NULL."
-        word = strtok(NULL, delimeters);
     }
 
     // do some division
@@ -94,4 +98,16 @@ bool endOfSentence(string word)
 
     // there was no match
     return false;
+}
+
+int numNonSpaces(string text, int textPosition)
+{
+    int wordLength = 0;
+    int i = textPosition;
+    while(text[i] != ' ' && text[i] != '\0')
+    {
+        wordLength++;
+        i++;
+    }
+    return wordLength;
 }
