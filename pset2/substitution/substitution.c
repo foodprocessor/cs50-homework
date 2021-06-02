@@ -69,7 +69,7 @@ int main(int argc, string argv[])
     // take in command line argument (cipher / offset)
     if (argc != 2)
     {
-        printf("Usage: ./caesar key\n");
+        printf("Usage: ./substitution key\n");
         validInput = false;
     }
     else
