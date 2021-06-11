@@ -26,21 +26,9 @@ int main(int argc, string argv[])
 
     // print the result
     int numbersPerRow = 10;
-    for (int i = 0; i < numValues/numbersPerRow; i++)
+    for (int i = 0; i < numValues; i++)
     {
-        for (int j = 0; j < numbersPerRow; j++)
-        {
-            int index = (i * numbersPerRow) + j;
-            if (index > numValues)
-            {
-                break;
-            }
-            else
-            {
-                printf("%i ",array[index]);
-            }
-        }
-        printf("\n");
+        printf("%i\n",array[i]);
     }
 }
 
