@@ -30,6 +30,7 @@ bool vote(int rank, string name, int ranks[]);
 void record_preferences(int ranks[]);
 void add_pairs(void);
 void sort_pairs(void);
+bool comparePairs(pair pair1, pair pair2);
 void lock_pairs(void);
 void print_winner(void);
 
@@ -133,18 +134,60 @@ void record_preferences(int ranks[])
 // Record pairs of candidates where one is preferred over the other
 void add_pairs(void)
 {
-    // for (int i)
-    // pair newPair;
-    // newPair.winner =
-    // TODO
+    // iterate over the preferences to create pairs for each one
+    for (int i = 0; i < candidate_count; i++)
+    {
+        for (int j = i + 1; j < candidate_count; j++)
+        {
+            pair thisResult;
+            int numVotersPreferI = preferences[j][i];
+            int numVotersPreferJ = preferences[i][j];
+            if (numVotersPreferI > numVotersPreferJ)
+            {
+                thisResult.winner = i;
+                thisResult.loser = j;
+            }
+            pairs[pair_count] = thisResult;
+            pair_count++;
+        }
+    }
     return;
 }
 
 // Sort pairs in decreasing order by strength of victory
 void sort_pairs(void)
 {
-    // TODO
+    // bubble sort
+    for (int i = 1; i < pair_count; i++)
+    {
+        for (int j = 0; j < pair_count - i; j++)
+        {
+            if (comparePairs(pairs[j], pairs[j + 1]) > 0)
+            {
+                pair temp = pairs[j];
+                pairs[j] = pairs[j + 1];
+                pairs[j + 1] = temp;
+            }
+        }
+
+    }
     return;
+}
+
+// Compare pairs. Works like strcmp:
+//  -zero is equal
+//  -negative means firts item is smaller
+//  -positive means first item is larger.
+bool comparePairs(pair pair1, pair pair2)
+{
+    // because every voter has to rank every candidate,
+    // the number of voters that prefer candidate i over candidate j
+    // is all the information needed to sort victory strength
+    // because the number of voters that prefer candidate j over candidate i is:
+    // preferences[j][i] = numVoters - preferences[i][j]
+    int strength1 = preferences[pair1.winner][pair1.loser];
+    int strength2 = preferences[pair2.winner][pair2.loser];
+    return strength1 - strength2;
 }
 
 // Lock pairs into the candidate graph in order, without creating cycles
