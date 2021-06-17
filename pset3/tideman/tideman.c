@@ -33,6 +33,7 @@ void sort_pairs(void);
 bool comparePairs(pair pair1, pair pair2);
 void lock_pairs(void);
 void print_winner(void);
+void recursivePairSort(pair array[], int length);
 
 int main(int argc, string argv[])
 {
@@ -157,20 +158,21 @@ void add_pairs(void)
 // Sort pairs in decreasing order by strength of victory
 void sort_pairs(void)
 {
-    // bubble sort
-    for (int i = 1; i < pair_count; i++)
-    {
-        for (int j = 0; j < pair_count - i; j++)
-        {
-            if (comparePairs(pairs[j], pairs[j + 1]) > 0)
-            {
-                pair temp = pairs[j];
-                pairs[j] = pairs[j + 1];
-                pairs[j + 1] = temp;
-            }
-        }
+    recursivePairSort(pairs, pair_count);
+    // // bubble sort (for fallback)
+    // for (int i = 1; i < pair_count; i++)
+    // {
+    //     for (int j = 0; j < pair_count - i; j++)
+    //     {
+    //         if (comparePairs(pairs[j], pairs[j + 1]) > 0)
+    //         {
+    //             pair temp = pairs[j];
+    //             pairs[j] = pairs[j + 1];
+    //             pairs[j + 1] = temp;
+    //         }
+    //     }
 
-    }
+    // }
     return;
 }
 
@@ -180,11 +182,12 @@ void sort_pairs(void)
 //  -positive means first item is larger.
 bool comparePairs(pair pair1, pair pair2)
 {
-    // because every voter has to rank every candidate,
-    // the number of voters that prefer candidate i over candidate j
-    // is all the information needed to sort victory strength
-    // because the number of voters that prefer candidate j over candidate i is:
-    // preferences[j][i] = numVoters - preferences[i][j]
+    // because every voter has to rank every candidate, that means:
+    //  pref[i][j] = numVoters - pref[j][i]
+    //  so,
+    //  voteMargin = pref[i][j] - pref[j][i] = pref[i][j] - (numVoters - pref[i][j]) = 2*pref[i][j] - numVoters
+    // so the number of people that prefer the winner to the loser is linearly related to the winning margin
+    // so the two are interchangeable for the purposes of sorting
     int strength1 = preferences[pair1.winner][pair1.loser];
     int strength2 = preferences[pair2.winner][pair2.loser];
     return strength1 - strength2;
@@ -193,7 +196,10 @@ bool comparePairs(pair pair1, pair pair2)
 // Lock pairs into the candidate graph in order, without creating cycles
 void lock_pairs(void)
 {
-    // TODO
+    for (int i = 0; i < pair_count; i++)
+    {
+        // hi!
+    }
     return;
 }
 
@@ -204,3 +210,58 @@ void print_winner(void)
     return;
 }
 
+// this is Habinsky's quicksort
+// it is slightly less efficient that the normal quicksort algorithm
+// but it does not suffer from the problem of taking forever on sorted arrays!
+void recursivePairSort(pair array[], int length)
+{
+    // base case
+    if (length <= 1)
+    {
+        return;
+    }
+    // pick a random value for a guessed median
+    int middle = array[length / 2];
+    // loop from the outside in
+    int bottomIndex = 0;
+    int topIndex = length - 1;
+    // this loop exit condition is designed to get the indices to just pass each other before exiting
+    while (bottomIndex <= topIndex)
+    {
+        pair bottom = array[bottomIndex];
+        pair top = array[topIndex];
+        bool bottomNeedsToSwap = comparePairs(bottom, middle) >= 0;
+        bool topNeedsToSwap = comparePairs(middle, top) >= 0;
+        if (!bottomNeedsToSwap)
+        {
+            bottomIndex++;
+        }
+        if (!topNeedsToSwap)
+        {
+            topIndex--;
+        }
+        else if (bottomNeedsToSwap && topNeedsToSwap)
+        {
+            if (bottomIndex != topIndex)
+            {
+                // swap them!
+                array[bottomIndex] = top;
+                array[topIndex] = bottom;
+                // move the indices
+                bottomIndex++;
+                topIndex--;
+            }
+            else // topIndex == bottomIndex
+            {
+                // if the indices are the same,
+                // incrementing both will break the recursion math below
+                topIndex--;
+            }
+        }
+    }
+    // recurse on bottom and top sections
+    // the bottom section is from index 0 with length topIndex + 1
+    sort(array, topIndex + 1);
+    // the top section is from bottomIndex with length length - bottomIndex
+    sort(array + bottomIndex, length - bottomIndex);
+}
