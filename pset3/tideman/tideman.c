@@ -198,28 +198,37 @@ void lock_pairs(void)
 {
     for (int i = 0; i < pair_count; i++)
     {
-        topPair = pairs[i];
-        // trace the graph to find a cycle
-        locked[topPair.winner][topPair.loser] = true;
+        // get the information for this pair
+        pair topPair = pairs[i];
+        int edgeWinner = topPair.winner;
+        int edgeLoser = topPair.loser;
+        // to identify cycles in the graph, we need a way to leave breadcrumbs as we trace the edges in the graph
+        // for those breadcrumbs, we'll use a 2D array which will keep track of which edges we have already touched
+        bool traversedEdges[candidate_count][candidate_count] = {false}; // this is a dangerous and unreadable initialization, and I have no idea if it works
+        // check if adding this edge would cause a cycle
+        if (!hasCycle(edgeWinner, edgeLoser, traversedEdges))
+        {
+            locked[edgeWinner][edgeLoser] = true;
+        }
     }
     return;
 }
 
-bool hasCycle(pair currentPair, pair traversedEdges[][])
+bool hasCycle(int newEdgeWinner, int newEdgeLoser, bool traversedEdges[][])
 {
-    if (traversedEdges[currentPair.winner][currentPair.loser])
+    if (traversedEdges[newEdgeWinner][newEdgeLoser])
     {
         // found a cycle!
         return true;
     }
     // mark this edge as traversed (we're about to traverse it)
-    traversedEdges[currentPair.winner][currentPair.loser] = true;
+    traversedEdges[newEdgeWinner][newEdgeLoser] = true;
     // now find locked edges for which the current pair's winner is a loser
     for (int i = 0; i < candidate_count; i++)
     {
         if (locked[i][currentPair.winner])
         {
-            if (hasCycle(i, currentPair.winner, traversedEdges))
+            if (hasCycle(i, newEdgeWinner, traversedEdges))
             {
                 return true;
             }
