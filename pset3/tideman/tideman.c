@@ -32,6 +32,7 @@ void add_pairs(void);
 void sort_pairs(void);
 bool comparePairs(pair pair1, pair pair2);
 void lock_pairs(void);
+void print_pairs(void);
 void print_winner(void);
 void recursivePairSort(pair array[], int length);
 
@@ -93,6 +94,7 @@ int main(int argc, string argv[])
 
     add_pairs();
     sort_pairs();
+    print_pairs();
     lock_pairs();
     print_winner();
     return 0;
@@ -298,4 +300,18 @@ void recursivePairSort(pair array[], int length)
     sort(array, topIndex + 1);
     // the top section is from bottomIndex with length length - bottomIndex
     sort(array + bottomIndex, length - bottomIndex);
+}
+
+void print_pairs(void)
+{
+    printf("Printing pairs...\n");
+    for (int i = 0; i < pair_count; i++)
+    {
+        int winner = pairs[i].winner;
+        int loser = pairs[i].loser;
+        string winnerName = candidates[winner];
+        string loserName = candidates[loser];
+        printf("%s (%i) won against %s (%i) with %i votes.\n",
+            winnerName, winner, loserName, loser, preferences[winner][loser]);
+    }
 }
