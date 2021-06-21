@@ -1,5 +1,6 @@
 #include <cs50.h>
 #include <stdio.h>
+#include <string.h>
 
 // Max number of candidates
 #define MAX 9
@@ -30,7 +31,8 @@ bool vote(int rank, string name, int ranks[]);
 void record_preferences(int ranks[]);
 void add_pairs(void);
 void sort_pairs(void);
-bool comparePairs(pair pair1, pair pair2);
+int comparePairs(pair pair1, pair pair2);
+bool hasCycle(int newEdgeWinner, int newEdgeLoser, bool traversedEdges[MAX][MAX]);
 void lock_pairs(void);
 void print_pairs(void);
 void print_winner(void);
@@ -104,7 +106,6 @@ int main(int argc, string argv[])
 bool vote(int rank, string name, int ranks[])
 {
     // find the candidate matching the given name
-    chosenCandidateIndex = -1;
     for (int i = 0; i < candidate_count; i++)
     {
         if (strcmp(name, candidates[i]) == 0)
@@ -142,16 +143,18 @@ void add_pairs(void)
     {
         for (int j = i + 1; j < candidate_count; j++)
         {
-            pair thisResult;
             int numVotersPreferI = preferences[j][i];
             int numVotersPreferJ = preferences[i][j];
+            // ignore cases where i is the loser
+            // this loop will hit both cases eventually
             if (numVotersPreferI > numVotersPreferJ)
             {
+                pair thisResult;
                 thisResult.winner = i;
                 thisResult.loser = j;
+                pairs[pair_count] = thisResult;
+                pair_count++;
             }
-            pairs[pair_count] = thisResult;
-            pair_count++;
         }
     }
     return;
@@ -182,7 +185,7 @@ void sort_pairs(void)
 //  -zero is equal
 //  -negative means firts item is smaller
 //  -positive means first item is larger.
-bool comparePairs(pair pair1, pair pair2)
+int comparePairs(pair pair1, pair pair2)
 {
     // because every voter has to rank every candidate, that means:
     //  pref[i][j] = numVoters - pref[j][i]
@@ -206,7 +209,15 @@ void lock_pairs(void)
         int edgeLoser = topPair.loser;
         // to identify cycles in the graph, we need a way to leave breadcrumbs as we trace the edges in the graph
         // for those breadcrumbs, we'll use a 2D array which will keep track of which edges we have already touched
-        bool traversedEdges[candidate_count][candidate_count] = {false}; // this is a dangerous and unreadable initialization, and I have no idea if it works
+        bool traversedEdges[MAX][MAX];
+        // initialize the 2D array (this is boring!)
+        for (int j = 0; j < candidate_count; j++)
+        {
+            for (int k = 0; k < candidate_count; k++)
+            {
+                traversedEdges[j][k] = false;
+            }
+        }
         // check if adding this edge would cause a cycle
         if (!hasCycle(edgeWinner, edgeLoser, traversedEdges))
         {
@@ -216,7 +227,7 @@ void lock_pairs(void)
     return;
 }
 
-bool hasCycle(int newEdgeWinner, int newEdgeLoser, bool traversedEdges[][])
+bool hasCycle(int newEdgeWinner, int newEdgeLoser, bool traversedEdges[MAX][MAX])
 {
     if (traversedEdges[newEdgeWinner][newEdgeLoser])
     {
@@ -228,7 +239,7 @@ bool hasCycle(int newEdgeWinner, int newEdgeLoser, bool traversedEdges[][])
     // now find locked edges for which the current pair's winner is a loser
     for (int i = 0; i < candidate_count; i++)
     {
-        if (locked[i][currentPair.winner])
+        if (locked[i][newEdgeWinner])
         {
             if (hasCycle(i, newEdgeWinner, traversedEdges))
             {
@@ -257,7 +268,7 @@ void recursivePairSort(pair array[], int length)
         return;
     }
     // pick a random value for a guessed median
-    int middle = array[length / 2];
+    pair middle = array[length / 2];
     // loop from the outside in
     int bottomIndex = 0;
     int topIndex = length - 1;
@@ -297,9 +308,9 @@ void recursivePairSort(pair array[], int length)
     }
     // recurse on bottom and top sections
     // the bottom section is from index 0 with length topIndex + 1
-    sort(array, topIndex + 1);
+    recursivePairSort(array, topIndex + 1);
     // the top section is from bottomIndex with length length - bottomIndex
-    sort(array + bottomIndex, length - bottomIndex);
+    recursivePairSort(array + bottomIndex, length - bottomIndex);
 }
 
 void print_pairs(void)
