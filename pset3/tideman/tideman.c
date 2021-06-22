@@ -126,7 +126,7 @@ void record_preferences(int ranks[])
     {
         // i < j, so ranks[i] is prefered (wins) over ranks[j]
         int winner = ranks[i];
-        for (int j = i + 1; j < candidate_count; i++)
+        for (int j = i + 1; j < candidate_count; j++)
         {
             int loser = ranks[j];
             preferences[winner][loser]++;
@@ -253,7 +253,29 @@ bool hasCycle(int newEdgeWinner, int newEdgeLoser, bool traversedEdges[MAX][MAX]
 // Print the winner of the election
 void print_winner(void)
 {
-    // TODO
+    // in order to honor the largest margin first, we start with the top pair
+    // the top pair is guaranteed to be locked, since it gets locked first
+    //  and no cycle is possible with only one edge
+    pair topResult = pairs[0];
+    int currentWinner = topResult.winner;
+    bool newWinner = true;
+    while (newWinner)
+    {
+        // search for a locked edge, where the winner of this match-up is the loser
+        for (int i = 0; i < candidate_count; i++)
+        {
+            if (locked[i][currentWinner])
+            {
+                currentWinner = i;
+                continue;
+            }
+        }
+        // if we didn't find anyone to beat the current winner,
+        //  that means we found the final winner. Stop the search!
+        newWinner = false;
+    }
+    // print the result!
+    printf("%s\n", candidates[currentWinner]);
     return;
 }
 
