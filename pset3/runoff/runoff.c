@@ -193,8 +193,21 @@ int find_min(void)
 // Return true if the election is tied between all candidates, false otherwise
 bool is_tie(int min)
 {
-    // TODO
-    return false;
+    // get the max votes for non-eliminated candidates
+    int maxVotes = 0;
+    for (int candidate = 0; candidate < candidate_count; candidate++)
+    {
+        if (candidates[candidate].eliminated)
+        {
+            continue;
+        }
+        if (candidates[candidate].votes > maxVotes)
+        {
+            maxVotes = candidates[candidate].votes;
+        }
+    }
+    // is the max equal to the min?
+    return maxVotes == min;
 }
 
 // Eliminate the candidate (or candidates) in last place
