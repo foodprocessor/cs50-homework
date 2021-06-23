@@ -160,7 +160,15 @@ void tabulate(void)
 // Print the winner of the election, if there is one
 bool print_winner(void)
 {
-    // TODO
+    float winThreshold = voter_count / 2.0;
+    for (int candidate = 0; candidate < candidate_count; candidate++)
+    {
+        if (candidates[candidate].votes > winThreshold)
+        {
+            printf("%s\n", candidates[candidate].name);
+            return true;
+        }
+    }
     return false;
 }
 
