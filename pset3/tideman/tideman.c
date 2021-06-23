@@ -145,8 +145,14 @@ void add_pairs(void)
         {
             int numVotersPreferI = preferences[i][j];
             int numVotersPreferJ = preferences[j][i];
+            // reject ties (not a pair!)
+            if (numVotersPreferI == numVotersPreferJ)
+            {
+                continue;
+            }
+            // create a pair
             pair thisResult;
-            if (numVotersPreferI >= numVotersPreferJ)
+            if (numVotersPreferI > numVotersPreferJ)
             {
                 thisResult.winner = i;
                 thisResult.loser = j;
