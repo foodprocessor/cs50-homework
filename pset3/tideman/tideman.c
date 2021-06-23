@@ -355,6 +355,6 @@ void print_pairs(void)
         string winnerName = candidates[winner];
         string loserName = candidates[loser];
         printf("%s (%i) won against %s (%i) with %i votes.\n",
-            winnerName, winner, loserName, loser, preferences[winner][loser]);
+               winnerName, winner, loserName, loser, preferences[winner][loser]);
     }
 }
