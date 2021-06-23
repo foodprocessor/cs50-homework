@@ -285,6 +285,7 @@ void print_winner(void)
 // this is Habinsky's quicksort
 // it is slightly less efficient that the normal quicksort algorithm
 // but it does not suffer from the problem of taking forever on sorted arrays!
+// the algorithm has been altered here, to sort in descending order
 void recursivePairSort(pair array[], int length)
 {
     // base case
@@ -302,8 +303,8 @@ void recursivePairSort(pair array[], int length)
     {
         pair bottom = array[bottomIndex];
         pair top = array[topIndex];
-        bool bottomNeedsToSwap = comparePairs(bottom, middle) >= 0;
-        bool topNeedsToSwap = comparePairs(middle, top) >= 0;
+        bool bottomNeedsToSwap = comparePairs(bottom, middle) <= 0;
+        bool topNeedsToSwap = comparePairs(middle, top) <= 0;
         if (!bottomNeedsToSwap)
         {
             bottomIndex++;
