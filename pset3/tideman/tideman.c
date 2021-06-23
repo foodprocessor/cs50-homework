@@ -96,7 +96,7 @@ int main(int argc, string argv[])
 
     add_pairs();
     sort_pairs();
-    print_pairs();
+    // print_pairs();
     lock_pairs();
     print_winner();
     return 0;
@@ -245,10 +245,10 @@ bool hasCycle(int newEdgeWinner, int newEdgeLoser, bool traversedEdges[MAX][MAX]
     }
     // mark this edge as traversed (we're about to traverse it)
     traversedEdges[newEdgeWinner][newEdgeLoser] = true;
-    // now find locked edges for which the current pair's winner is a loser
+    // now find locked or traversed edges for which the current pair's winner is a loser
     for (int i = 0; i < candidate_count; i++)
     {
-        if (locked[i][newEdgeWinner])
+        if (locked[i][newEdgeWinner] || traversedEdges[i][newEdgeWinner])
         {
             if (hasCycle(i, newEdgeWinner, traversedEdges))
             {
