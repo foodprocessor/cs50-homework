@@ -18,8 +18,6 @@ int main(void)
     {
         printChars(' ', size - i);
         printChars('#', i);
-        printf("  ");
-        printChars('#', i);
         printf("\n");
     }
 }
