@@ -251,7 +251,7 @@ bool hasCycle(pair edge, bool visited[MAX][MAX])
         if (visited[i][edge.winner])
         {
             // edge.winner lost against someone, and that edge was already visited.
-            // We have a loop!
+            // We have a cycle!
             return true;
         }
 
@@ -264,10 +264,14 @@ bool hasCycle(pair edge, bool visited[MAX][MAX])
             // so let's follow that edge to see if it leads to a cycle
             if (hasCycle(lockedEdge, visited))
             {
+                // Found a cycle!
+                // No need to continue searching.
                 return true;
             }
         }
     }
+    // We got through the loop without finding any cycles,
+    // so we don't have a cycle!
     return false;
 }
 
