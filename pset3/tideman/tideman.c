@@ -209,10 +209,6 @@ int comparePairs(pair pair1, pair pair2)
 // Lock pairs into the candidate graph in order, without creating cycles
 void lock_pairs(void)
 {
-    // we'll start from the top pair when searching the graph for a cycle
-    // this is an arbitrary yet reasonable choice
-    pair topPair = pairs[0];
-
     // try locking in each pair, in descending order of margin of victory
     for (int i = 0; i < pair_count; i++)
     {
@@ -231,8 +227,10 @@ void lock_pairs(void)
         }
         // tentatively lock the edge, and then see if the resulting graph has a cycle
         locked[edge.winner][edge.loser] = true;
-        // it shouldn't matter where in the graph we start searching, but the top pair is a safe choice
-        if (hasCycle(topPair, visited))
+        // start the cycle search with the edge we're trying to add
+        // because if this edge introduces a cycle into the graph, then this edge must be part of that cycle
+        // If we start the search with another edge, we may never discover the cycle being introduced by this edge
+        if (hasCycle(edge, visited))
         {
             locked[edge.winner][edge.loser] = false;
         }
@@ -282,8 +280,8 @@ bool hasCycle(pair edge, bool visited[MAX][MAX])
 void print_winner(void)
 {
     // in order to honor the largest margin first, we start with the top pair
-    // the top pair is guaranteed to be locked, since it gets locked first
-    //  and no cycle is possible with only one edge
+    // the top pair is guaranteed to be locked, since it gets locked first,
+    //  and no cycle is possible in a graph with only one edge
     pair topResult = pairs[0];
     int currentWinner = topResult.winner;
     bool newWinner = true;
