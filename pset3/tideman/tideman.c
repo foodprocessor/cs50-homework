@@ -110,7 +110,7 @@ bool vote(int rank, string name, int ranks[])
     {
         if (strcmp(name, candidates[i]) == 0)
         {
-            // remember, rank[i] is the voter's ith preference
+            // remember, ranks[n] is the voter's nth preference
             ranks[rank] = i;
             return true;
         }
@@ -209,12 +209,19 @@ int comparePairs(pair pair1, pair pair2)
 // Lock pairs into the candidate graph in order, without creating cycles
 void lock_pairs(void)
 {
+    // we'll start from the top pair when searching the graph for a cycle
+    // this is an arbitrary yet reasonable choice
+    pair topPair = pairs[0];
+
+    // try locking in each pair, in descending order of margin of victory
     for (int i = 0; i < pair_count; i++)
     {
+        // copy the edge being considered into a local variable, for readability
+        pair edge = pairs[i];
         // to identify cycles in the graph, we need a way to leave breadcrumbs as we trace the edges in the graph
         // for those breadcrumbs, we'll use a 2D array which will keep track of which edges we have already touched
         bool visited[MAX][MAX];
-        // initialize the 2D array (this is boring!)
+        // initialize the 2D array
         for (int j = 0; j < candidate_count; j++)
         {
             for (int k = 0; k < candidate_count; k++)
@@ -222,11 +229,12 @@ void lock_pairs(void)
                 visited[j][k] = false;
             }
         }
-        // check if adding this edge would cause a cycle
-        pair edge = pairs[i];
-        if (!hasCycle(edge, visited))
+        // tentatively lock the edge, and then see if the resulting graph has a cycle
+        locked[edge.winner][edge.loser] = true;
+        // it shouldn't matter where in the graph we start searching, but the top pair is a safe choice
+        if (hasCycle(topPair, visited))
         {
-            locked[edge.winner][edge.loser] = true;
+            locked[edge.winner][edge.loser] = false;
         }
     }
     return;
@@ -246,32 +254,27 @@ bool hasCycle(pair edge, bool visited[MAX][MAX])
     // This algorithm walks the graph from losers to winners.
     // We take the current edge's winning candidate, and see if there are edges from that candidate to another winner.
     // In other words, we ask: did this winner lose against anyone else?
-    for (int i = 0; i < candidate_count; i++)
+    for (int i = 0; i < pair_count; i++)
     {
-        if (visited[i][edge.winner])
+        // only look at pairs where edge.winner lost
+        if (edge.winner == pairs[i].loser)
         {
-            // edge.winner lost against someone, and that edge was already visited.
-            // We have a cycle!
-            return true;
-        }
-
-        if (locked[i][edge.winner])
-        {
-            // edge.winner lost against someone, and that edge is locked
-            pair lockedEdge = { .loser = edge.winner,
-                                .winner = i
-                              };
-            // so let's follow that edge to see if it leads to a cycle
-            if (hasCycle(lockedEdge, visited))
+            // let's give a name to the edge we're about to consider
+            pair nextEdge = pairs[i];
+            // if this edge is locked, let our search follow it
+            if (locked[nextEdge.winner][nextEdge.loser])
             {
-                // Found a cycle!
-                // No need to continue searching.
-                return true;
+                // does searching that edge reveal a cycle?
+                if (hasCycle(nextEdge, visited))
+                {
+                    // Found a cycle. Report it up.
+                    return true;
+                }
+                // if this edge doesn't lead to cycle, keep searching the others to make sure there are none.
             }
         }
     }
-    // We got through the loop without finding any cycles,
-    // so we don't have a cycle!
+    // We got through the loop without finding any cycles, so we don't have a cycle!
     return false;
 }
 
@@ -287,12 +290,20 @@ void print_winner(void)
     while (newWinner)
     {
         // search for a locked edge, where the winner of this match-up is the loser
-        for (int i = 0; i < candidate_count; i++)
+        for (int i = 0; i < pair_count; i++)
         {
-            if (locked[i][currentWinner])
+            pair edge = pairs[i];
+            // we want locked edges only
+            if (!locked[edge.winner][edge.loser])
             {
-                currentWinner = i;
                 continue;
+            }
+            // we're looking for pairings where our current winner loses
+            if (currentWinner == edge.loser)
+            {
+                currentWinner = edge.winner;
+                newWinner = true;
+                break;
             }
         }
         // if we didn't find anyone to beat the current winner,
