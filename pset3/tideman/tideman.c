@@ -96,7 +96,7 @@ int main(int argc, string argv[])
 
     add_pairs();
     sort_pairs();
-    // print_pairs();
+    print_pairs();
     lock_pairs();
     print_winner();
     return 0;
@@ -277,6 +277,67 @@ bool hasCycle(pair edge, bool visited[MAX][MAX])
 }
 
 // Print the winner of the election
+// this version is the one Brian implies / recommends in the walktrhough video
+void print_winner_brian(void)
+{
+    // find the candidate whose column of locked is all false
+    // in other words, find the candidate with no losing locked pairs
+    for (int i = 0; i < candidate_count; i++)
+    {
+        bool i_is_source = true;
+        // check every row's i'th entry to see if i lost against that row's candidate
+        for (int j = 0; j < candidate_count; j++)
+        {
+            if (locked[j][i])
+            {
+                // candidate i lost against candidate j
+                i_is_source = false;
+                // move on to the next possible winner
+                break;
+            }
+        }
+
+        if (i_is_source)
+        {
+            // the loop above checked every row and found no losses for candidate i
+            printf("%s\n", candidates[i]);
+        }
+    }
+}
+
+// Print the winner of the election
+// this was my first workin solution. check50 likes this one.
+void print_winner_habinsky_first_try(void)
+{
+    // in order to honor the largest margin first, we start with the top pair
+    // the top pair is guaranteed to be locked, since it gets locked first
+    //  and no cycle is possible with only one edge
+    pair topResult = pairs[0];
+    int currentWinner = topResult.winner;
+    bool newWinner;
+    do
+    {
+        newWinner = false;
+        for (int i = 0; i < candidate_count; i++)
+        {
+            if (locked[i][currentWinner])
+            {
+                currentWinner = i;
+                newWinner = true;
+                break;
+            }
+        }
+    }
+    while (newWinner);
+    // print the result!
+    printf("%s\n", candidates[currentWinner]);
+}
+
+// Print the winner of the election
+// this was my attempt to use the pairs to implement this function
+// check50 does NOT like this one:
+// :( print_winner prints winner of election when some pairs are tied
+//    print_winner did not print winner of election
 void print_winner(void)
 {
     // in order to honor the largest margin first, we start with the top pair
@@ -284,33 +345,47 @@ void print_winner(void)
     //  and no cycle is possible in a graph with only one edge
     pair topResult = pairs[0];
     int currentWinner = topResult.winner;
-    bool newWinner = true;
-    while (newWinner)
+    bool newWinner;
+    do
     {
+        // if no new winner is found, no one beat the current winner,
+        //  and that means we found the final winner.
+        newWinner = false;
         // search for a locked edge, where the winner of this match-up is the loser
         for (int i = 0; i < pair_count; i++)
         {
             pair edge = pairs[i];
-            // we want locked edges only
-            if (!locked[edge.winner][edge.loser])
-            {
-                continue;
-            }
-            // we're looking for pairings where our current winner loses
-            if (currentWinner == edge.loser)
+            // look for locked edges where the current winner lost
+            if (currentWinner == edge.loser && locked[edge.winner][edge.loser])
             {
                 currentWinner = edge.winner;
                 newWinner = true;
                 break;
             }
         }
-        // if we didn't find anyone to beat the current winner,
-        //  that means we found the final winner. Stop the search!
-        newWinner = false;
     }
-    // print the result!
-    printf("%s\n", candidates[currentWinner]);
-    return;
+    while (newWinner);
+
+    // now let's check that the winner doesn't have any locked edges where it lost
+    bool winnerWon = true;
+    for (int i = 0; i < candidate_count; i++)
+    {
+        if (locked[i][currentWinner])
+        {
+            printf("Bug!!! I thought %i won, but %i beat them!", currentWinner, i);
+            winnerWon = false;
+            break;
+        }
+    }
+    if (winnerWon)
+    {
+        // print the result!
+        printf("%s\n", candidates[currentWinner]);
+    }
+    else
+    {
+        print_winner_brian();
+    }
 }
 
 // this is Habinsky's quicksort
