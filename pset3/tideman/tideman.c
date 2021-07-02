@@ -340,22 +340,19 @@ void print_winner_habinsky_first_try(void)
 //    print_winner did not print winner of election
 void print_winner(void)
 {
-    // in order to honor the largest margin first, we start with the top pair
-    // the top pair is guaranteed to be locked, since it gets locked first,
-    //  and no cycle is possible in a graph with only one edge
-    pair topResult = pairs[0];
-    int currentWinner = topResult.winner;
+    // start with the one edge that is guaranteed to be locked
+    pair maxMarginPair = pairs[0];
+    int currentWinner = maxMarginPair.winner;
+
+    // loop until we find an undefeated winner
     bool newWinner;
     do
     {
-        // if no new winner is found, no one beat the current winner,
-        //  and that means we found the final winner.
         newWinner = false;
-        // search for a locked edge, where the winner of this match-up is the loser
         for (int i = 0; i < pair_count; i++)
         {
             pair edge = pairs[i];
-            // look for locked edges where the current winner lost
+            // look for locked edges in which the current winner is the loser
             if (currentWinner == edge.loser && locked[edge.winner][edge.loser])
             {
                 currentWinner = edge.winner;
@@ -366,26 +363,8 @@ void print_winner(void)
     }
     while (newWinner);
 
-    // now let's check that the winner doesn't have any locked edges where it lost
-    bool winnerWon = true;
-    for (int i = 0; i < candidate_count; i++)
-    {
-        if (locked[i][currentWinner])
-        {
-            printf("Bug!!! I thought %i won, but %i beat them!", currentWinner, i);
-            winnerWon = false;
-            break;
-        }
-    }
-    if (winnerWon)
-    {
-        // print the result!
-        printf("%s\n", candidates[currentWinner]);
-    }
-    else
-    {
-        print_winner_brian();
-    }
+    // print it out!
+    printf("%s\n", candidates[currentWinner]);
 }
 
 // this is Habinsky's quicksort
