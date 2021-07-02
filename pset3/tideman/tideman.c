@@ -215,8 +215,6 @@ void lock_pairs(void)
     // try locking in each pair, in descending order of margin of victory
     for (int i = 0; i < pair_count; i++)
     {
-        // copy the edge being considered into a local variable, for readability
-        pair edge = pairs[i];
         // to identify cycles in the graph, we need a way to leave breadcrumbs as we trace the edges in the graph
         // for those breadcrumbs, we'll use a 2D array which will keep track of which edges we have already touched
         bool visited[MAX][MAX];
@@ -229,10 +227,11 @@ void lock_pairs(void)
             }
         }
         // tentatively lock the edge, and then see if the resulting graph has a cycle
+        pair edge = pairs[i];
         locked[edge.winner][edge.loser] = true;
         // start the cycle search with the edge we're trying to add
         // because if this edge introduces a cycle into the graph, then this edge must be part of that cycle
-        // If we start the search with another edge, we may never discover the cycle being introduced by this edge
+        // If we start the search with another edge, we may not discover the cycle being introduced by this edge
         if (hasCycle(edge, visited))
         {
             locked[edge.winner][edge.loser] = false;
@@ -279,7 +278,9 @@ bool hasCycle(pair edge, bool visited[MAX][MAX])
     return false;
 }
 
-// test check50 to see if the pairs array matches the locked array
+// Print the winner of the election
+// there are two working versions of print_winner in this code: print_winner_brian and print_winner_pairs
+// this function just calls print_winner_pairs, after rewriting pairs as a workaround to a check50 bug
 void print_winner(void)
 {
     // check50 does not write the pairs array when testing this function
@@ -291,7 +292,7 @@ void print_winner(void)
     print_winner_pairs();
 }
 
-// builds the given array of pairs from the locked array and returns the new pairs array length
+// Build the given array of pairs from the locked array and return the resulting pairs array length
 int buildPairsFromLocked(pair correctPairs[])
 {
     int numPairs = 0;
