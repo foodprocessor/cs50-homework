@@ -84,18 +84,6 @@ int main(int argc, char *argv[])
         return 7;
     }
 
-    // examine the pointers created by calloc
-    printf("after calloc, image is set to %p\n", image;
-    for (int row = 0; row < height; row++)
-    {
-        printf("&image[%i] is %p, and image[%i] is %p\n", row, &image[row], row, image[row]);
-        for (int col = 0; col < width; col++)
-        {
-            RGBTRIPLE *pixel = &image[row][col];
-            printf("&image[%i][%i] is %p, and image[%i][%i] is #%x%x%x\n", row, col, &image[row][col], row, col, pixel->rgbtRed, pixel->rgbtGreen, pixel->rgbtBlue);
-        }
-    }
-
     // Determine padding for scanlines
     int padding = (4 - (width * sizeof(RGBTRIPLE)) % 4) % 4;
 
@@ -107,20 +95,6 @@ int main(int argc, char *argv[])
 
         // Skip over padding
         fseek(inptr, padding, SEEK_CUR);
-    }
-
-
-
-    // examine the data read in by fread
-    printf("after fread, image is set to %p\n", image);
-    for (int row = 0; row < height; row++)
-    {
-        printf("&image[%i] is %p, and image[%i] is %p\n", row, &image[row], row, image[row]);
-        for (int col = 0; col < width; col++)
-        {
-            RGBTRIPLE *pixel = &image[row][col];
-            printf("&image[%i][%i] is %p, and image[%i][%i] is #%x%x%x\n", row, col, &image[row][col], row, col, pixel->rgbtRed, pixel->rgbtGreen, pixel->rgbtBlue);
-        }
     }
 
     // Filter image
