@@ -32,7 +32,7 @@ void record_preferences(int ranks[]);
 void add_pairs(void);
 void sort_pairs(void);
 int comparePairs(pair pair1, pair pair2);
-bool hasCycle(pair edge, bool visited[MAX][MAX]);
+bool hasCycle(pair edgeBeingLocked, pair currentEdge);
 void lock_pairs(void);
 void print_pairs(void);
 void print_winner(void);
@@ -77,6 +77,7 @@ int main(int argc, string argv[])
     // Query for votes
     for (int i = 0; i < voter_count; i++)
     {
+        printf("Voter %i\n", i + 1);
         // ranks[j] is voter's jth preference
         int ranks[candidate_count];
 
@@ -215,24 +216,13 @@ void lock_pairs(void)
     // try locking in each pair, in descending order of margin of victory
     for (int i = 0; i < pair_count; i++)
     {
-        // to identify cycles in the graph, we need a way to leave breadcrumbs as we trace the edges in the graph
-        // for those breadcrumbs, we'll use a 2D array which will keep track of which edges we have already touched
-        bool visited[MAX][MAX];
-        // initialize the 2D array
-        for (int j = 0; j < candidate_count; j++)
-        {
-            for (int k = 0; k < candidate_count; k++)
-            {
-                visited[j][k] = false;
-            }
-        }
         // tentatively lock the edge, and then see if the resulting graph has a cycle
         pair edge = pairs[i];
         locked[edge.winner][edge.loser] = true;
         // start the cycle search with the edge we're trying to add
         // because if this edge introduces a cycle into the graph, then this edge must be part of that cycle
         // If we start the search with another edge, we may not discover the cycle being introduced by this edge
-        if (hasCycle(edge, visited))
+        if (hasCycle(edge, edge))
         {
             locked[edge.winner][edge.loser] = false;
         }
@@ -240,41 +230,37 @@ void lock_pairs(void)
     return;
 }
 
-bool hasCycle(pair edge, bool visited[MAX][MAX])
+// to use this recursive function, lock the pair under consideration,
+// then call this function with that pair for both parameters
+bool hasCycle(pair edgeBeingLocked, pair currentEdge)
 {
-    if (visited[edge.winner][edge.loser])
+    // this function traverses the graph from winners to losers
+    // We take the currentEdge's losing candidate, and search for locked match-ups in which they won
+    // if the currentEdge's loser is the winner of the edgeBeingLocked, then we've run into ourselves and found a cycle
+    if (currentEdge.loser == edgeBeingLocked.winner)
     {
-        // found a cycle!
         return true;
     }
-
-    // mark this edge as visited, so we'll know if we run into it again
-    visited[edge.winner][edge.loser] = true;
-
-    // This algorithm walks the graph from losers to winners.
-    // We take the current edge's winning candidate, and see if there are edges from that candidate to another winner.
-    // In other words, we ask: did this winner lose against anyone else?
-    for (int i = 0; i < pair_count; i++)
+    // find locked pairs in which the currentEdge's loser won
+    for (int pairIndex = 0; pairIndex < pair_count; pairIndex++)
     {
-        // only look at pairs where edge.winner lost
-        if (edge.winner == pairs[i].loser)
+        // get the pair
+        pair thisPair = pairs[pairIndex];
+        // we're only interested in locked pairs
+        if (locked[thisPair.winner][thisPair.loser])
         {
-            // let's give a name to the edge we're about to consider
-            pair nextEdge = pairs[i];
-            // if this edge is locked, let our search follow it
-            if (locked[nextEdge.winner][nextEdge.loser])
+            // did the currentEdge's loser win in this locked pair?
+            if (currentEdge.loser == thisPair.winner)
             {
-                // does searching that edge reveal a cycle?
-                if (hasCycle(nextEdge, visited))
+                // does this path lead to a cycle?
+                if (hasCycle(edgeBeingLocked, thisPair))
                 {
-                    // Found a cycle. Report it up.
                     return true;
                 }
-                // if this edge doesn't lead to cycle, keep searching the others to make sure there are none.
             }
         }
     }
-    // We got through the loop without finding any cycles, so we don't have a cycle!
+    // We got through the loop without finding any cycles, so we don't have a cycle.
     return false;
 }
 
@@ -306,9 +292,9 @@ int buildPairsFromLocked(pair correctPairs[])
                 bool pairMissing = true;
 
                 // loop over the pairs to see if it has a matching entry
-                for (int pairNumber = 0; pairNumber < numPairs; pairNumber++)
+                for (int pairIndex = 0; pairIndex < numPairs; pairIndex++)
                 {
-                    pair thisPair = correctPairs[pairNumber];
+                    pair thisPair = correctPairs[pairIndex];
                     if (thisPair.winner == winner && thisPair.loser == loser)
                     {
                         // found the matching pair
