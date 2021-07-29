@@ -32,6 +32,7 @@ bool print_winner(void);
 int find_min(void);
 bool is_tie(int min);
 void eliminate(int min);
+void print_round_results(void);
 
 int main(int argc, string argv[])
 {
@@ -88,6 +89,7 @@ int main(int argc, string argv[])
     {
         // Calculate votes given remaining candidates
         tabulate();
+        print_round_results();
 
         // Check if election has been won
         bool won = print_winner();
@@ -157,6 +159,15 @@ void tabulate(void)
     return;
 }
 
+void print_round_results(void)
+{
+    printf("Round Start!\n");
+    for (int candidate = 0; candidate < candidate_count; candidate++)
+    {
+        printf("%s got %i votes!\n", candidates[candidate].name, candidates[candidate].votes);
+    }
+}
+
 // Print the winner of the election, if there is one
 bool print_winner(void)
 {
@@ -218,6 +229,7 @@ void eliminate(int min)
         if (candidates[candidate].votes <= min)
         {
             candidates[candidate].eliminated = true;
+            printf("%s eliminated!\n", candidates[candidate].name);
         }
     }
     return;
