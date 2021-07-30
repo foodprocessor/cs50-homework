@@ -45,9 +45,9 @@ void reflect(int height, int width, RGBTRIPLE image[height][width])
     return;
 }
 
-void printImagePixel(int row, int col, RGBTRIPLE pixel)
+void printPixel(char *caption, int row, int col, RGBTRIPLE pixel)
 {
-    printf("(%i,%i): #%x%x%x\n", row, col, pixel.rgbtRed, pixel.rgbtGreen, pixel.rgbtBlue);
+    printf("%s (%i,%i): (%i,%i,%i)\n", caption, row, col, pixel.rgbtRed, pixel.rgbtGreen, pixel.rgbtBlue);
 }
 
 _Bool validCoordinates(int row, int col, int height, int width)
@@ -60,12 +60,14 @@ _Bool validCoordinates(int row, int col, int height, int width)
 // Blur image
 void blur(int height, int width, RGBTRIPLE image[height][width])
 {
+    _Bool debug = 0;
     // Can we use a small buffer (not the whole image)?
-    // let's walk through the first steps
-
-    // write the first three blured rows to the buffer
+    // write the first block of blured rows to the buffer
     // write the first blurred row back onto the source image
-    // write the fourth blurred row to the buffer
+    // write the next blurred row over the row just written out to the image
+    // loop like that, one row in, one row out, until we get to the end
+    // at the end, there will be rows left in the buffer that haven't been written
+    // write out the remaining rows
 
     int blurSize = 3;
     RGBTRIPLE blurBuffer[blurSize][width];
@@ -78,6 +80,9 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
     {
         for (int col = 0; col < width; col++)
         {
+            if (debug) {
+                printPixel("original", row, col, image[row][col]);
+            }
             // initialize blur accumulators
             float redSum = 0, greenSum = 0, blueSum = 0;
             int boxPixelCount = 0;
@@ -111,29 +116,46 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
         // if there are three rows in the blur buffer, write one out to the original image
         if (filledBlurBufferRows == 3)
         {
-            // why is this plus one? We're using a full circular buffer...
-            // so the row to read is right after the row we just wrote!
-            blurBufferReadRow = (blurBufferWriteRow + 1) % 3;
+            // the row to read is the one about to be overwritten
+            blurBufferReadRow = blurBufferWriteRow;
+            if (debug)
+            {
+                printf("Reading from buffer row %i\n", blurBufferReadRow);
+            }
             // copy the row
             for (int col = 0; col < width; col++)
             {
                 image[row-2][col] = blurBuffer[blurBufferReadRow][col];
-                // printImagePixel(row-2, col, image[row-2][col]);
+                if (debug)
+                {
+                    printPixel("blurred", row-2, col, image[row-2][col]);
+                }
             }
             // update the number of remaining rows in the buffer
             filledBlurBufferRows--;
         }
+    }
+    if (debug)
+    {
+        printf("End first blur loop\n");
     }
     // after this loop exits, the blurBuffer will still have two more rows that need to be written to the image
     int imageWriteRow = height - (blurSize - 1);
     while (imageWriteRow < height)
     {
         blurBufferReadRow = (blurBufferReadRow + 1) % blurSize;
+        if (debug)
+        {
+            printf("Reading from buffer row %i\n", blurBufferReadRow);
+        }
         // copy the row
         for (int col = 0; col < width; col++)
         {
             image[imageWriteRow][col] = blurBuffer[blurBufferReadRow][col];
-            // printImagePixel(imageWriteRow, col, image[imageWriteRow][col]);
+            if (debug)
+            {
+                printPixel("imageTail", imageWriteRow, col, image[imageWriteRow][col]);
+            }
         }
         // move on to the next row
         imageWriteRow++;
