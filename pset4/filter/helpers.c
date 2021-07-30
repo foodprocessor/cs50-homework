@@ -69,96 +69,79 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
     // at the end, there will be rows left in the buffer that haven't been written
     // write out the remaining rows
 
-    int blurSize = 3;
-    RGBTRIPLE blurBuffer[blurSize][width];
-    int blurBufferWriteRow = 0;
-    int blurBufferReadRow;
-    int filledBlurBufferRows = 0;
+    // needed variables
+    // calculations ready flag
+    // calculations done flag
+    // image read row
+    // image write row
+    // buffer write row
+    // buffer read row
 
-    // iterate over the image's pixels
-    for (int row = 0; row < height; row++)
-    {
-        for (int col = 0; col < width; col++)
-        {
-            if (debug) {
-                printPixel("original", row, col, image[row][col]);
-            }
-            // initialize blur accumulators
-            float redSum = 0, greenSum = 0, blueSum = 0;
-            int boxPixelCount = 0;
-            // blur using the box around this pixel
-            for (int boxRow = row - 1; boxRow <= row + 1; boxRow++)
-            {
-                for (int boxCol = col - 1; boxCol <= col + 1; boxCol++)
-                {
-                    if (validCoordinates(boxRow, boxCol, height, width))
-                    {
-                        RGBTRIPLE boxPixel = image[boxRow][boxCol];
-                        redSum += boxPixel.rgbtRed;
-                        greenSum += boxPixel.rgbtGreen;
-                        blueSum += boxPixel.rgbtBlue;
-                        boxPixelCount++;
-                    }
-                }
-            }
-            // get the average (adding 0.5 rounds the result before truncation)
-            RGBTRIPLE blurredPixel = {
-                .rgbtRed = (redSum / boxPixelCount) + 0.5,
-                .rgbtGreen = (greenSum / boxPixelCount) + 0.5,
-                .rgbtBlue = (blueSum / boxPixelCount) + 0.5
-            };
-            // write the result into the blurred pixel buffer
-            blurBuffer[blurBufferWriteRow][col] = blurredPixel;
-        }
-        // move to write the next blur buffer row
-        blurBufferWriteRow = (blurBufferWriteRow + 1) % 3;
-        filledBlurBufferRows++;
-        // if there are three rows in the blur buffer, write one out to the original image
-        if (filledBlurBufferRows == 3)
-        {
-            // the row to read is the one about to be overwritten
-            blurBufferReadRow = blurBufferWriteRow;
-            if (debug)
-            {
-                printf("Reading from buffer row %i\n", blurBufferReadRow);
-            }
-            // copy the row
-            for (int col = 0; col < width; col++)
-            {
-                image[row-2][col] = blurBuffer[blurBufferReadRow][col];
-                if (debug)
-                {
-                    printPixel("blurred", row-2, col, image[row-2][col]);
-                }
-            }
-            // update the number of remaining rows in the buffer
-            filledBlurBufferRows--;
-        }
-    }
-    if (debug)
-    {
-        printf("End first blur loop\n");
-    }
-    // after this loop exits, the blurBuffer will still have two more rows that need to be written to the image
-    int imageWriteRow = height - (blurSize - 1);
+    int blurRadius = 1;
+    int blurSize = (blurRadius * 2) + 1;
+    RGBTRIPLE blurBuffer[blurSize][width];
+    int bufferWriteRow = 0;
+    int bufferReadRow = 0;
+    int imageReadRow = 0;
+    int imageWriteRow = 0;
+
     while (imageWriteRow < height)
     {
-        blurBufferReadRow = (blurBufferReadRow + 1) % blurSize;
-        if (debug)
+        // if we haven't read all the rows, read a row of the image
+        if (imageReadRow < height)
         {
-            printf("Reading from buffer row %i\n", blurBufferReadRow);
-        }
-        // copy the row
-        for (int col = 0; col < width; col++)
-        {
-            image[imageWriteRow][col] = blurBuffer[blurBufferReadRow][col];
-            if (debug)
+            for (int col = 0; col < width; col++)
             {
-                printPixel("imageTail", imageWriteRow, col, image[imageWriteRow][col]);
+                if (debug) {
+                    printPixel("original", imageReadRow, col, image[imageReadRow][col]);
+                }
+                // initialize blur accumulators
+                float redSum = 0, greenSum = 0, blueSum = 0;
+                int boxPixelCount = 0;
+                // blur using the box around this pixel
+                for (int boxRow = imageReadRow - blurRadius; boxRow <= imageReadRow + blurRadius; boxRow++)
+                {
+                    for (int boxCol = col - blurRadius; boxCol <= col + blurRadius; boxCol++)
+                    {
+                        if (validCoordinates(boxRow, boxCol, height, width))
+                        {
+                            RGBTRIPLE boxPixel = image[boxRow][boxCol];
+                            redSum += boxPixel.rgbtRed;
+                            greenSum += boxPixel.rgbtGreen;
+                            blueSum += boxPixel.rgbtBlue;
+                            boxPixelCount++;
+                        }
+                    }
+                }
+                // get the average (adding 0.5 rounds the result before truncation)
+                RGBTRIPLE blurredPixel = {
+                    .rgbtRed = (redSum / boxPixelCount) + 0.5,
+                    .rgbtGreen = (greenSum / boxPixelCount) + 0.5,
+                    .rgbtBlue = (blueSum / boxPixelCount) + 0.5
+                };
+                // write the result into the blurred pixel buffer
+                blurBuffer[bufferWriteRow][col] = blurredPixel;
             }
+            bufferWriteRow = (bufferWriteRow + 1) % blurSize;
+            imageReadRow++;
         }
-        // move on to the next row
-        imageWriteRow++;
+
+        // if the buffer is ready, write a row from it onto the image
+        // also do this if the image is done being read (all calculations have ended)
+        if (imageReadRow >= imageWriteRow + blurSize || imageReadRow == height)
+        {
+            // copy a row
+            for (int col = 0; col < width; col++)
+            {
+                image[imageWriteRow][col] = blurBuffer[bufferReadRow][col];
+                if (debug)
+                {
+                    printPixel("blurred", imageWriteRow, col, image[imageWriteRow][col]);
+                }
+            }
+            imageWriteRow++;
+            bufferReadRow = (bufferReadRow + 1) % blurSize;
+        }
     }
     return;
 }
