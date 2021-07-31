@@ -1,5 +1,8 @@
 #include "helpers.h"
 #include <stdio.h>
+#include <math.h>
+
+_Bool debug = 0;
 
 // Convert image to grayscale
 void grayscale(int height, int width, RGBTRIPLE image[height][width])
@@ -60,7 +63,6 @@ _Bool validCoordinates(int row, int col, int height, int width)
 // Blur image
 void blur(int height, int width, RGBTRIPLE image[height][width])
 {
-    _Bool debug = 0;
     // Can we use a small buffer (not the whole image)?
     // write the first block of blured rows to the buffer
     // write the first blurred row back onto the source image
@@ -68,14 +70,6 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
     // loop like that, one row in, one row out, until we get to the end
     // at the end, there will be rows left in the buffer that haven't been written
     // write out the remaining rows
-
-    // needed variables
-    // calculations ready flag
-    // calculations done flag
-    // image read row
-    // image write row
-    // buffer write row
-    // buffer read row
 
     int blurRadius = 1;
     int blurSize = (blurRadius * 2) + 1;
@@ -149,5 +143,105 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
 // Detect edges
 void edges(int height, int width, RGBTRIPLE image[height][width])
 {
+    int kernelRadius = 1;
+    int kernelSize = (kernelRadius * 2) + 1;
+    RGBTRIPLE kernelBuffer[kernelSize][width];
+    int bufferWriteRow = 0;
+    int bufferReadRow = 0;
+    int imageReadRow = 0;
+    int imageWriteRow = 0;
+    int gxKernel[3][3] =
+    {
+        {-1, 0, 1},
+        {-2, 0, 2},
+        {-1, 0, 1}
+    };
+    int gyKernel[3][3] =
+    {
+        {-1, -2, -1},
+        { 0,  0,  0},
+        { 1,  2,  1}
+    };
+
+    while (imageWriteRow < height)
+    {
+        // if we haven't read all the rows, read a row of the image
+        if (imageReadRow < height)
+        {
+            for (int col = 0; col < width; col++)
+            {
+                if (debug) {
+                    printPixel("original", imageReadRow, col, image[imageReadRow][col]);
+                }
+                // initialize kernel accumulators
+                float redGxSum = 0, greenGxSum = 0, blueGxSum = 0;
+                float redGySum = 0, greenGySum = 0, blueGySum = 0;
+                int kernelRow = 0, kernelCol = 0;
+                // compute kernel using the box around this pixel
+                for (int boxRow = imageReadRow - kernelRadius; boxRow <= imageReadRow + kernelRadius; boxRow++)
+                {
+                    for (int boxCol = col - kernelRadius; boxCol <= col + kernelRadius; boxCol++)
+                    {
+                        if (validCoordinates(boxRow, boxCol, height, width))
+                        {
+                            RGBTRIPLE boxPixel = image[boxRow][boxCol];
+                            redGxSum += boxPixel.rgbtRed * gxKernel[kernelRow][kernelCol];
+                            greenGxSum += boxPixel.rgbtGreen * gxKernel[kernelRow][kernelCol];
+                            blueGxSum += boxPixel.rgbtBlue * gxKernel[kernelRow][kernelCol];
+                            redGySum += boxPixel.rgbtRed * gyKernel[kernelRow][kernelCol];
+                            greenGySum += boxPixel.rgbtGreen * gyKernel[kernelRow][kernelCol];
+                            blueGySum += boxPixel.rgbtBlue * gyKernel[kernelRow][kernelCol];
+                        }
+                        kernelCol++;
+                    }
+                    kernelRow++;
+                }
+                // combine the kernels
+                float redEdge = sqrt(pow(redGxSum, 2) + pow(redGySum, 2));
+                float greenEdge = sqrt(pow(greenGxSum, 2) + pow(greenGySum, 2));
+                float blueEdge = sqrt(pow(blueGxSum, 2) + pow(blueGySum, 2));
+                // cap at 255
+                if (redEdge > 255)
+                {
+                    redEdge = 255;
+                }
+                if (greenEdge > 255)
+                {
+                    greenEdge = 255;
+                }
+                if (blueEdge > 255)
+                {
+                    blueEdge = 255;
+                }
+                // adding 0.5 before truncating to whole numbers rounds the values
+                RGBTRIPLE edgePixel = {
+                    .rgbtRed = redEdge + 0.5,
+                    .rgbtGreen = greenEdge + 0.5,
+                    .rgbtBlue = blueEdge + 0.5
+                };
+                // write the result into the pixel buffer
+                kernelBuffer[bufferWriteRow][col] = edgePixel;
+            }
+            bufferWriteRow = (bufferWriteRow + 1) % kernelSize;
+            imageReadRow++;
+        }
+
+        // if the buffer is ready, write a row from it onto the image
+        // also do this if the image is done being read (all calculations have ended)
+        if (imageReadRow >= imageWriteRow + kernelSize || imageReadRow == height)
+        {
+            // copy a row
+            for (int col = 0; col < width; col++)
+            {
+                image[imageWriteRow][col] = kernelBuffer[bufferReadRow][col];
+                if (debug)
+                {
+                    printPixel("edge", imageWriteRow, col, image[imageWriteRow][col]);
+                }
+            }
+            imageWriteRow++;
+            bufferReadRow = (bufferReadRow + 1) % kernelSize;
+        }
+    }
     return;
 }
