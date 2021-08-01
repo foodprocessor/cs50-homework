@@ -196,9 +196,7 @@ void edges(int height, int width, RGBTRIPLE image[height][width])
                             greenGySum += boxPixel.rgbtGreen * weightGy;
                             blueGySum += boxPixel.rgbtBlue * weightGy;
                         }
-                        kernelCol++;
                     }
-                    kernelRow++;
                 }
                 // combine the kernels
                 float redEdge = sqrt(pow(redGxSum, 2) + pow(redGySum, 2));
