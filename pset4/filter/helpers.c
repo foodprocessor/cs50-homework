@@ -176,21 +176,25 @@ void edges(int height, int width, RGBTRIPLE image[height][width])
                 // initialize kernel accumulators
                 float redGxSum = 0, greenGxSum = 0, blueGxSum = 0;
                 float redGySum = 0, greenGySum = 0, blueGySum = 0;
-                int kernelRow = 0, kernelCol = 0;
                 // compute kernel using the box around this pixel
-                for (int boxRow = imageReadRow - kernelRadius; boxRow <= imageReadRow + kernelRadius; boxRow++)
+                for (int boxRow = imageReadRow - kernelRadius, kernelRow = 0; boxRow <= imageReadRow + kernelRadius; boxRow++, kernelRow++)
                 {
-                    for (int boxCol = col - kernelRadius; boxCol <= col + kernelRadius; boxCol++)
+                    for (int boxCol = col - kernelRadius, kernelCol = 0; boxCol <= col + kernelRadius; boxCol++, kernelCol++)
                     {
                         if (validCoordinates(boxRow, boxCol, height, width))
                         {
+                            // get the pixel (in the 3x3 grid)
                             RGBTRIPLE boxPixel = image[boxRow][boxCol];
-                            redGxSum += boxPixel.rgbtRed * gxKernel[kernelRow][kernelCol];
-                            greenGxSum += boxPixel.rgbtGreen * gxKernel[kernelRow][kernelCol];
-                            blueGxSum += boxPixel.rgbtBlue * gxKernel[kernelRow][kernelCol];
-                            redGySum += boxPixel.rgbtRed * gyKernel[kernelRow][kernelCol];
-                            greenGySum += boxPixel.rgbtGreen * gyKernel[kernelRow][kernelCol];
-                            blueGySum += boxPixel.rgbtBlue * gyKernel[kernelRow][kernelCol];
+                            // compute Gx color values
+                            int weightGx = gxKernel[kernelRow][kernelCol];
+                            redGxSum += boxPixel.rgbtRed * weightGx;
+                            greenGxSum += boxPixel.rgbtGreen * weightGx;
+                            blueGxSum += boxPixel.rgbtBlue * weightGx;
+                            // compute Gy color values
+                            int weightGy = gyKernel[kernelRow][kernelCol];
+                            redGySum += boxPixel.rgbtRed * weightGy;
+                            greenGySum += boxPixel.rgbtGreen * weightGy;
+                            blueGySum += boxPixel.rgbtBlue * weightGy;
                         }
                         kernelCol++;
                     }
