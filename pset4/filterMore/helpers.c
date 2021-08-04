@@ -37,7 +37,7 @@ void reflect(int height, int width, RGBTRIPLE image[height][width])
     for (int row = 0; row < height; row++)
     {
         // we only need to go half way
-        for (int col = 0; col < width/2; col++)
+        for (int col = 0; col < width / 2; col++)
         {
             temp = image[row][col];
             int reflectedColumn = width - 1 - col;
@@ -86,7 +86,8 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
         {
             for (int col = 0; col < width; col++)
             {
-                if (debug) {
+                if (debug)
+                {
                     printPixel("original", imageReadRow, col, image[imageReadRow][col]);
                 }
                 // initialize blur accumulators
@@ -108,7 +109,8 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
                     }
                 }
                 // get the average (adding 0.5 rounds the result before truncation)
-                RGBTRIPLE blurredPixel = {
+                RGBTRIPLE blurredPixel =
+                {
                     .rgbtRed = (redSum / boxPixelCount) + 0.5,
                     .rgbtGreen = (greenSum / boxPixelCount) + 0.5,
                     .rgbtBlue = (blueSum / boxPixelCount) + 0.5
@@ -170,7 +172,8 @@ void edges(int height, int width, RGBTRIPLE image[height][width])
         {
             for (int col = 0; col < width; col++)
             {
-                if (debug) {
+                if (debug)
+                {
                     printPixel("original", imageReadRow, col, image[imageReadRow][col]);
                 }
                 // initialize kernel accumulators
@@ -203,20 +206,12 @@ void edges(int height, int width, RGBTRIPLE image[height][width])
                 float greenEdge = sqrt(pow(greenGxSum, 2) + pow(greenGySum, 2));
                 float blueEdge = sqrt(pow(blueGxSum, 2) + pow(blueGySum, 2));
                 // cap at 255
-                if (redEdge > 255)
-                {
-                    redEdge = 255;
-                }
-                if (greenEdge > 255)
-                {
-                    greenEdge = 255;
-                }
-                if (blueEdge > 255)
-                {
-                    blueEdge = 255;
-                }
+                redEdge = redEdge > 255 ? 255 : redEdge;
+                greenEdge = greenEdge > 255 ? 255 : greenEdge;
+                blueEdge = blueEdge > 255 ? 255 : blueEdge;
                 // adding 0.5 before truncating to whole numbers rounds the values
-                RGBTRIPLE edgePixel = {
+                RGBTRIPLE edgePixel =
+                {
                     .rgbtRed = redEdge + 0.5,
                     .rgbtGreen = greenEdge + 0.5,
                     .rgbtBlue = blueEdge + 0.5
