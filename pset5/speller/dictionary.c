@@ -16,10 +16,12 @@ typedef struct node
 node;
 
 // Number of buckets in hash table
-const unsigned int N = 1;
+const unsigned int N = 0x20000 - 1; // a large prime on the order of the number of words in the dictionary
 
 // Hash table
 node *table[N];
+
+void printHashTable();
 
 // Returns true if word is in dictionary, else false
 bool check(const char *word)
@@ -56,8 +58,16 @@ bool check(const char *word)
 // Hashes word to a number
 unsigned int hash(const char *word)
 {
-    // TODO
-    return 0;
+    int i = 0, sum = 65521; // random prime starting value (not zero!)
+    while (true)
+    {
+        if (word[i] == '\0')
+        {
+            return sum;
+        }
+        sum = (sum * tolower(word[i])) % N;
+        i++;
+    }
 }
 
 // Loads dictionary into memory, returning true if successful, else false
@@ -116,6 +126,7 @@ unsigned int size(void)
 // Unloads dictionary from memory, returning true if successful, else false
 bool unload(void)
 {
+    // printHashTable(); // debug
     // node *temp, *nodeToFree;
     for (int bucket = 0; bucket < N; bucket++)
     {
@@ -133,4 +144,19 @@ bool unload(void)
         }
     }
     return true;
+}
+
+void printHashTable()
+{
+    int wordsPerBucket[N];
+    for (int bucket = 0; bucket < N; bucket++)
+    {
+        int numWordsInBucket = 0;
+        for (node *wordNode = table[bucket]; wordNode != NULL; wordNode = wordNode->next)
+        {
+            numWordsInBucket++;
+        }
+        printf("%d ", numWordsInBucket);
+    }
+    printf("\n");
 }
