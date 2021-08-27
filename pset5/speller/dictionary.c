@@ -32,7 +32,9 @@ bool check(const char *word)
         int i = 0;
         while(true)
         {
-            if (tolower(word[i]) != tolower(wordNode->word[i]))
+            // the spec says the dictionary will be lowercase
+            // so we save a step by not running tolower on the dictionary word
+            if (tolower(word[i]) != wordNode->word[i])
             {
                 // not a match
                 // break to look at the next entry in the linked list
