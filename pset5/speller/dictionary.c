@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <math.h>
 #include "dictionary.h"
 
 // Represents a node in a hash table
@@ -21,6 +22,9 @@ const unsigned int N = 0x20000 - 1; // a large prime on the order of the number 
 // Hash table
 node *table[N];
 
+// cheat by keeping the number of words on load
+int numWords = 0;
+
 void printHashTable();
 
 // Returns true if word is in dictionary, else false
@@ -31,18 +35,21 @@ bool check(const char *word)
     // walk the linked list for this hash
     for (node *wordNode = table[wordHash]; wordNode != NULL; wordNode = wordNode->next)
     {
+        char *dictWord = wordNode->word;
         int i = 0;
         while(true)
         {
             // the spec says the dictionary will be lowercase
             // so we save a step by not running tolower on the dictionary word
-            if (tolower(word[i]) != wordNode->word[i])
+            char textWordLetter = tolower(word[i]);
+            char dictWordLetter = dictWord[i];
+            if (textWordLetter != dictWordLetter)
             {
                 // not a match
                 // break to look at the next entry in the linked list
                 break;
             }
-            else if (word[i] == '\0' && wordNode->word[i] == '\0')
+            else if (textWordLetter == '\0')
             {
                 // both words have ended, without finding a difference
                 return true;
@@ -73,6 +80,11 @@ unsigned int hash(const char *word)
 // Loads dictionary into memory, returning true if successful, else false
 bool load(const char *dictionary)
 {
+    // initialize the table
+    for (int bucket = 0; bucket < N; bucket++)
+    {
+        table[bucket] = NULL;
+    }
     // opent the file
     FILE *fileHandle = fopen(dictionary, "r");
     if (fileHandle == NULL)
@@ -81,7 +93,7 @@ bool load(const char *dictionary)
         return false;
     }
     // iterate over incoming dictionary words
-    int numWords = 0;
+    numWords = 0;
     int matches;
     do
     {
@@ -104,6 +116,8 @@ bool load(const char *dictionary)
         newWordNode->next = table[wordHash];
         // now replace the head with the new node
         table[wordHash] = newWordNode;
+        // increment the word count
+        numWords++;
     } while(!feof(fileHandle));
     // tell the caller of our success
     return true;
@@ -112,14 +126,14 @@ bool load(const char *dictionary)
 // Returns number of words in dictionary if loaded, else 0 if not yet loaded
 unsigned int size(void)
 {
-    int numWords = 0;
-    for (int bucket = 0; bucket < N; bucket++)
-    {
-        for (node *wordNode = table[bucket]; wordNode != NULL; wordNode = wordNode->next)
-        {
-            numWords++;
-        }
-    }
+    // int numWords = 0;
+    // for (int bucket = 0; bucket < N; bucket++)
+    // {
+    //     for (node *wordNode = table[bucket]; wordNode != NULL; wordNode = wordNode->next)
+    //     {
+    //         numWords++;
+    //     }
+    // }
     return numWords;
 }
 
