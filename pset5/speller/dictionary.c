@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <math.h>
+#include "crc16ccitt.c"
 #include "dictionary.h"
 
 // Represents a node in a hash table
@@ -17,7 +17,7 @@ typedef struct node
 node;
 
 // Number of buckets in hash table
-const unsigned int N = 0x20000 - 1; // a large prime on the order of the number of words in the dictionary
+const unsigned int N = 0x10000;
 
 // Hash table
 node *table[N];
@@ -63,18 +63,35 @@ bool check(const char *word)
 }
 
 // Hashes word to a number
+// inspired by / taken from https://www.php.net/manual/en/function.crc32.php
 unsigned int hash(const char *word)
 {
-    int i = 0, sum = 65521; // random prime starting value (not zero!)
+    int wordLength = 0;
     while (true)
     {
-        if (word[i] == '\0')
+        if (word[wordLength] == '\0')
         {
-            return sum;
+            break;
         }
-        sum = (sum * tolower(word[i])) % N;
-        i++;
+        wordLength++;
     }
+    unsigned char *lowerWord = malloc(wordLength + 1);
+    for (int i = 0; i < wordLength; i++)
+    {
+        lowerWord[i] = tolower(word[i]);
+    }
+    lowerWord[wordLength] = '\0';
+    return CRCCCITT(lowerWord, wordLength, 65521, 127);
+    // int i = 0, sum = 65521; // random prime starting value (not zero!)
+    // while (true)
+    // {
+    //     if (word[i] == '\0')
+    //     {
+    //         return sum;
+    //     }
+    //     sum = (sum * 127 + tolower(word[i]));
+    //     i++;
+    // }
 }
 
 // Loads dictionary into memory, returning true if successful, else false
@@ -140,7 +157,7 @@ unsigned int size(void)
 // Unloads dictionary from memory, returning true if successful, else false
 bool unload(void)
 {
-    // printHashTable(); // debug
+    printHashTable(); // debug
     // node *temp, *nodeToFree;
     for (int bucket = 0; bucket < N; bucket++)
     {
@@ -162,6 +179,8 @@ bool unload(void)
 
 void printHashTable()
 {
+    int bucketsPerRow = 100;
+    int bucketsInThisRow = 0;
     int wordsPerBucket[N];
     for (int bucket = 0; bucket < N; bucket++)
     {
@@ -171,6 +190,12 @@ void printHashTable()
             numWordsInBucket++;
         }
         printf("%d ", numWordsInBucket);
+        bucketsInThisRow++;
+        if (bucketsInThisRow > bucketsPerRow)
+        {
+            printf("\n");
+            bucketsInThisRow = 0;
+        }
     }
     printf("\n");
 }
