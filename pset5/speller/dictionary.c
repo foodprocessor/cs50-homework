@@ -37,7 +37,7 @@ bool check(const char *word)
     {
         char *dictWord = wordNode->word;
         int i = 0;
-        while(true)
+        while (true)
         {
             // the spec says the dictionary will be lowercase
             // so we save a step by not running tolower on the dictionary word
@@ -118,7 +118,10 @@ bool load(const char *dictionary)
         table[wordHash] = newWordNode;
         // increment the word count
         numWords++;
-    } while(!feof(fileHandle));
+    }
+    while (!feof(fileHandle));
+    // close the file
+    fclose(fileHandle);
     // tell the caller of our success
     return true;
 }
